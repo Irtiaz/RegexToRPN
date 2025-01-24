@@ -4,8 +4,6 @@
 #include "stack.h"
 #include "stb_ds.h"
 
-#define MAX_TOKEN_LENGTH 5
-
 typedef enum { LEFT, RIGHT } Associativity;
 
 typedef struct {
@@ -13,14 +11,15 @@ typedef struct {
   Associativity associativity;
 } Operator;
 
-const char **to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
-                                        size_t number_of_tokens,
+const char **to_reverse_polish_notation(const char **infix_tokens,
                                         Operator *operators);
 int token_to_operator_index(const char *token, Operator *operators);
 size_t get_precedence(Operator operator, Operator * operators);
 
 int main(void) {
-  char infix_tokens[][MAX_TOKEN_LENGTH] = {"(", "1", "+", "2", ")", "*", "3"};
+  /*char infix_tokens[][MAX_TOKEN_LENGTH] = {"(", "1", "+", "2", ")", "*",
+   * "3"};*/
+  const char **infix_tokens = NULL;
   const char **rpn_tokens;
   Operator *operators = NULL;
 
@@ -32,7 +31,15 @@ int main(void) {
   arrput(operators, addition);
   arrput(operators, subtraction);
 
-  rpn_tokens = to_reverse_polish_notation(infix_tokens, 7, operators);
+  arrput(infix_tokens, "(");
+  arrput(infix_tokens, "1");
+  arrput(infix_tokens, "+");
+  arrput(infix_tokens, "2");
+  arrput(infix_tokens, ")");
+  arrput(infix_tokens, "*");
+  arrput(infix_tokens, "3");
+
+  rpn_tokens = to_reverse_polish_notation(infix_tokens, operators);
 
   {
     int i;
@@ -43,11 +50,11 @@ int main(void) {
 
   arrfree(operators);
   arrfree(rpn_tokens);
+  arrfree(infix_tokens);
   return 0;
 }
 
-const char **to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
-                                        size_t number_of_tokens,
+const char **to_reverse_polish_notation(const char **infix_tokens,
                                         Operator *operators) {
   size_t i;
 
@@ -55,8 +62,8 @@ const char **to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
   const char **output_buffer = NULL;
   int *open_parenthesis_indices_in_operator_stack = NULL;
 
-  for (i = 0; i < number_of_tokens; ++i) {
-    char *token = infix_tokens[i];
+  for (i = 0; i < (size_t)arrlen(infix_tokens); ++i) {
+    const char *token = infix_tokens[i];
     int operator_index = token_to_operator_index(token, operators);
 
     if (operator_index >= 0) {
