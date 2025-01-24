@@ -22,9 +22,9 @@ int main(void) {
   Operator *operators = NULL;
   char infix_tokens[][MAX_TOKEN_LENGTH] = {"(", "1", "+", "2", ")", "*", "3"};
 
-  Operator multiply = {'*', LEFT};
-  Operator addition = {'*', LEFT};
-  Operator subtraction = {'*', LEFT};
+  Operator multiply = {"*", LEFT};
+  Operator addition = {"+", LEFT};
+  Operator subtraction = {"-", LEFT};
 
   arrput(operators, multiply);
   arrput(operators, addition);
