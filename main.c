@@ -4,6 +4,9 @@
 #define STB_DS_IMPLEMENTATION
 #include "stb_ds.h"
 
+#include "stack.h"
+
+
 #define MAX_TOKEN_LENGTH 5
 
 typedef enum  {
@@ -54,8 +57,8 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH], size_t nu
        While there is an operator (y) at the top of the operators stack and either (x) is left-associative and its precedence is less or equal to that of (y), or (x) is right-associative and its precedence is less than (y)
       */
 
-      while (arrlen(operator_stack) > 0) {
-        Operator y = operator_stack[arrlen(operator_stack) - 1];
+      while (!stack_is_empty(operator_stack)) {
+        Operator y = stack_peek(operator_stack);
         size_t precedence_of_y = get_precedence(y);
 
         int x_is_left_associative = x.associativity == LEFT;
@@ -65,7 +68,7 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH], size_t nu
 
         if ((x_is_left_associative && x_precedence_is_less_or_equal_to_y) || (x_is_right_associative && x_precedence_is_less_than_y)) {
           /* pop y from the stack and add it to the output buffer */
-          arrdel(operator_stack, arrlen(operator_stack) - 1);
+          stack_delete_top(operator_stack);
           printf("%c\n", y.symbol);
         }
 
@@ -73,26 +76,26 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH], size_t nu
       }
 
       /* Push x on the operator stack */
-      arrput(operator_stack, x);
+      stack_push(operator_stack, x);
     }
 
     else if (strlen(token) == 1 && (token[0] == '(' || token[0] == ')')) {
       /* Our token is a parenthesis */
       char parenthesis_token = token[0];
       if (parenthesis_token == '(') {
-        /* Open parenthesis encountered */
-        int current_index_of_operator_stack = arrlen(operator_stack);
-        arrput(open_parenthesis_indices_in_operator_stack, current_index_of_operator_stack);
+        /* Open parenthesis encountered, push its position */
+        int current_index_of_operator_stack = stack_length(operator_stack);
+        stack_push(open_parenthesis_indices_in_operator_stack, current_index_of_operator_stack);
       }
       else {
         /* Closed parenthesis encountered */
-        int last_open_parenthesis_index = arrlast(open_parenthesis_indices_in_operator_stack);
-        while (arrlen(operator_stack) > last_open_parenthesis_index) {
+        int last_open_parenthesis_index = stack_peek(open_parenthesis_indices_in_operator_stack);
+        while (stack_length(operator_stack) > last_open_parenthesis_index) {
           Operator top_of_the_stack = operator_stack[arrlen(operator_stack) - 1];
           printf("%c\n", top_of_the_stack.symbol);
-          arrdel(operator_stack, arrlen(operator_stack) - 1);
+          stack_delete_top(operator_stack);
         }
-        arrdel(open_parenthesis_indices_in_operator_stack, arrlen(open_parenthesis_indices_in_operator_stack) - 1);
+        stack_delete_top(open_parenthesis_indices_in_operator_stack);
       }
     }
 
@@ -112,8 +115,8 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH], size_t nu
     arrdel(operator_stack, arrlen(operator_stack) - 1);
   }
 
-  arrfree(open_parenthesis_indices_in_operator_stack);
-  arrfree(operator_stack);
+  stack_free(open_parenthesis_indices_in_operator_stack);
+  stack_free(operator_stack);
 }
 
 int token_to_operator_index(const char *token) {
