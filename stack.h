@@ -1,6 +1,8 @@
 #ifndef STACK_H_435435
 #define STACK_H_435435
 
+#include "stb_ds.h"
+
 #define stack_push(stack, element) arrput((stack), (element))
 #define stack_pop(stack) arrpop((stack))
 #define stack_peek(stack) arrlast(stack)

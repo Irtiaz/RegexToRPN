@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define STB_DS_IMPLEMENTATION
-#include "stb_ds.h"
-
 #include "stack.h"
 
 #define MAX_TOKEN_LENGTH 5
