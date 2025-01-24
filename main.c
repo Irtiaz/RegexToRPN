@@ -9,7 +9,7 @@
 typedef enum { LEFT, RIGHT } Associativity;
 
 typedef struct {
-  char symbol;
+  const char *symbol;
   Associativity associativity;
 } Operator;
 
@@ -73,7 +73,7 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
             (x_is_right_associative && x_precedence_is_less_than_y)) {
           /* pop y from the stack and add it to the output buffer */
           (void)stack_pop(operator_stack);
-          printf("%c\n", y.symbol);
+          printf("%s\n", y.symbol);
         }
 
         else {
@@ -99,7 +99,7 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
             stack_pop(open_parenthesis_indices_in_operator_stack);
         while (stack_length(operator_stack) > last_open_parenthesis_index) {
           Operator top_of_the_stack = stack_pop(operator_stack);
-          printf("%c\n", top_of_the_stack.symbol);
+          printf("%s\n", top_of_the_stack.symbol);
         }
       }
     }
@@ -116,7 +116,7 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
    * output buffer */
   while (arrlen(operator_stack) != 0) {
     Operator top_of_the_stack = stack_pop(operator_stack);
-    printf("%c\n", top_of_the_stack.symbol);
+    printf("%s\n", top_of_the_stack.symbol);
   }
 
   stack_free(open_parenthesis_indices_in_operator_stack);
@@ -130,7 +130,7 @@ int token_to_operator_index(const char *token, Operator *operators) {
     return -1;
 
   for (i = 0; i < (size_t)arrlen(operators); ++i) {
-    if (operators[i].symbol == token[0])
+    if (strcmp(operators[i].symbol, token) == 0)
       return i;
   }
 
@@ -146,7 +146,7 @@ size_t get_precedence(Operator operator, Operator * operators) {
   }
 
   fprintf(stderr,
-          "At get_precedence(): operator %c not found in the operators list",
+          "At get_precedence(): operator %s not found in the operators list",
           operator.symbol);
   exit(1);
 }
