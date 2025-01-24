@@ -13,14 +13,16 @@ typedef struct {
   Associativity associativity;
 } Operator;
 
-void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
-                                size_t number_of_tokens, Operator *operators);
+const char **to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
+                                        size_t number_of_tokens,
+                                        Operator *operators);
 int token_to_operator_index(const char *token, Operator *operators);
 size_t get_precedence(Operator operator, Operator * operators);
 
 int main(void) {
-  Operator *operators = NULL;
   char infix_tokens[][MAX_TOKEN_LENGTH] = {"(", "1", "+", "2", ")", "*", "3"};
+  const char **rpn_tokens;
+  Operator *operators = NULL;
 
   Operator multiply = {"*", LEFT};
   Operator addition = {"+", LEFT};
@@ -30,17 +32,27 @@ int main(void) {
   arrput(operators, addition);
   arrput(operators, subtraction);
 
-  to_reverse_polish_notation(infix_tokens, 7, operators);
+  rpn_tokens = to_reverse_polish_notation(infix_tokens, 7, operators);
+
+  {
+    int i;
+    for (i = 0; i < arrlen(rpn_tokens); ++i) {
+      printf("%s ", rpn_tokens[i]);
+    }
+  }
 
   arrfree(operators);
+  arrfree(rpn_tokens);
   return 0;
 }
 
-void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
-                                size_t number_of_tokens, Operator *operators) {
+const char **to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
+                                        size_t number_of_tokens,
+                                        Operator *operators) {
   size_t i;
 
   Operator *operator_stack = NULL;
+  const char **output_buffer = NULL;
   int *open_parenthesis_indices_in_operator_stack = NULL;
 
   for (i = 0; i < number_of_tokens; ++i) {
@@ -73,7 +85,7 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
             (x_is_right_associative && x_precedence_is_less_than_y)) {
           /* pop y from the stack and add it to the output buffer */
           (void)stack_pop(operator_stack);
-          printf("%s\n", y.symbol);
+          arrput(output_buffer, y.symbol);
         }
 
         else {
@@ -99,7 +111,7 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
             stack_pop(open_parenthesis_indices_in_operator_stack);
         while (stack_length(operator_stack) > last_open_parenthesis_index) {
           Operator top_of_the_stack = stack_pop(operator_stack);
-          printf("%s\n", top_of_the_stack.symbol);
+          arrput(output_buffer, top_of_the_stack.symbol);
         }
       }
     }
@@ -108,7 +120,7 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
       /* our token is a regular token
        * just add it to the output buffer
        */
-      printf("%s\n", token);
+      arrput(output_buffer, token);
     }
   }
 
@@ -116,11 +128,13 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
    * output buffer */
   while (arrlen(operator_stack) != 0) {
     Operator top_of_the_stack = stack_pop(operator_stack);
-    printf("%s\n", top_of_the_stack.symbol);
+    arrput(output_buffer, top_of_the_stack.symbol);
   }
 
   stack_free(open_parenthesis_indices_in_operator_stack);
   stack_free(operator_stack);
+
+  return output_buffer;
 }
 
 int token_to_operator_index(const char *token, Operator *operators) {
