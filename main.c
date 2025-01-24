@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "stack.h"
+#include "stb_ds.h"
 
 #define MAX_TOKEN_LENGTH 5
 
@@ -12,27 +13,31 @@ typedef struct {
   Associativity associativity;
 } Operator;
 
-Operator operators[] = {
-    {'*', LEFT},
-    {'+', LEFT},
-    {'-', LEFT},
-};
-
 void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
-                                size_t number_of_tokens);
-int token_to_operator_index(const char *token);
-size_t get_precedence(Operator operator);
+                                size_t number_of_tokens, Operator *operators);
+int token_to_operator_index(const char *token, Operator *operators);
+size_t get_precedence(Operator operator, Operator * operators);
 
 int main(void) {
+  Operator *operators = NULL;
   char infix_tokens[][MAX_TOKEN_LENGTH] = {"(", "1", "+", "2", ")", "*", "3"};
 
-  to_reverse_polish_notation(infix_tokens, 7);
+  Operator multiply = {'*', LEFT};
+  Operator addition = {'*', LEFT};
+  Operator subtraction = {'*', LEFT};
 
+  arrput(operators, multiply);
+  arrput(operators, addition);
+  arrput(operators, subtraction);
+
+  to_reverse_polish_notation(infix_tokens, 7, operators);
+
+  arrfree(operators);
   return 0;
 }
 
 void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
-                                size_t number_of_tokens) {
+                                size_t number_of_tokens, Operator *operators) {
   size_t i;
 
   Operator *operator_stack = NULL;
@@ -40,12 +45,12 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
 
   for (i = 0; i < number_of_tokens; ++i) {
     char *token = infix_tokens[i];
-    int operator_index = token_to_operator_index(token);
+    int operator_index = token_to_operator_index(token, operators);
 
     if (operator_index >= 0) {
       /* Token IS an operator */
       Operator x = operators[operator_index];
-      size_t precedence_of_x = get_precedence(x);
+      size_t precedence_of_x = get_precedence(x, operators);
 
       /*
        While there is an operator (y) at the top of the operators stack and
@@ -56,7 +61,7 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
 
       while (!stack_is_empty(operator_stack)) {
         Operator y = stack_peek(operator_stack);
-        size_t precedence_of_y = get_precedence(y);
+        size_t precedence_of_y = get_precedence(y, operators);
 
         int x_is_left_associative = x.associativity == LEFT;
         int x_is_right_associative = x.associativity == RIGHT;
@@ -118,13 +123,13 @@ void to_reverse_polish_notation(char infix_tokens[][MAX_TOKEN_LENGTH],
   stack_free(operator_stack);
 }
 
-int token_to_operator_index(const char *token) {
+int token_to_operator_index(const char *token, Operator *operators) {
   size_t i;
 
   if (strlen(token) > 1)
     return -1;
 
-  for (i = 0; i < sizeof(operators) / sizeof(Operator); ++i) {
+  for (i = 0; i < (size_t)arrlen(operators); ++i) {
     if (operators[i].symbol == token[0])
       return i;
   }
@@ -132,9 +137,9 @@ int token_to_operator_index(const char *token) {
   return -1;
 }
 
-size_t get_precedence(Operator operator) {
+size_t get_precedence(Operator operator, Operator * operators) {
   size_t i;
-  size_t number_of_operators = sizeof(operators) / sizeof(Operator);
+  size_t number_of_operators = arrlen(operators);
   for (i = 0; i < number_of_operators; ++i) {
     if (operators[i].symbol == operator.symbol)
       return number_of_operators - i;
