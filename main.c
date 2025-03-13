@@ -17,8 +17,6 @@ int token_to_operator_index(const char *token, Operator *operators);
 size_t get_precedence(Operator operator, Operator * operators);
 
 int main(void) {
-  /*char infix_tokens[][MAX_TOKEN_LENGTH] = {"(", "1", "+", "2", ")", "*",
-   * "3"};*/
   const char **infix_tokens = NULL;
   const char **rpn_tokens;
   Operator *operators = NULL;
